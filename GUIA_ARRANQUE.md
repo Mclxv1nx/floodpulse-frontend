@@ -124,10 +124,35 @@ gateway Termux), dashboard (4321).
 
 ---
 
+## 5. Cuando algo falla: notificaciones y panel Debug
+
+El dashboard avisa con *toasts* (arriba a la derecha) y guarda todo en el panel
+**🛠 Debug** (abajo a la derecha): log con hora, tiempos por etapa del backend
+(`satelite`, `lluvia`, `osm`, `modelo`), origen del cauce (`osm` / `fallback`) y
+el botón **Diagnosticar conexiones**, que llama a `GET /diagnostico` del backend y
+prueba una por una: Planetary Computer, Open-Meteo, los servidores Overpass,
+Earth Engine y WhiteboxTools.
+
+| Mensaje en el dashboard | Qué significa | Qué hacer |
+|---|---|---|
+| **Backend no responde** | Nada escucha en `PUBLIC_API_BASE` | `start.ps1` del backend; revisa el puerto / firewall |
+| **El backend respondió sin cabeceras CORS** ("Failed to fetch" con backend vivo) | Excepción no controlada en el servidor (ya no debería pasar: ahora todo error sale como JSON con CORS) | Mira la consola de uvicorn |
+| **Fuente externa caída (502)** | Planetary Computer u Open-Meteo no responden | Internet / firewall / antivirus |
+| **Overpass no disponible (503)** | Los 3 servidores OSM fallaron y no había `fallback_waterway_coords` | Reintenta; para Ajaví el fallback ya va incluido |
+| **Aviso del backend: Lluvia observada (IMERG) = 0** | "Lluvia real" sin credenciales de Earth Engine; se usa solo el pronóstico | Said: `earthengine authenticate` (y `EE_PROJECT`); o usa el slider |
+| **Aviso: se usó el trazado manual (fallback)** | Overpass caído, pero el sector traía fallback | Nada, el cálculo es válido |
+| **Grilla vacía** | Hay algo en el 8000 que no es el backend real (p. ej. `mock_risk_api`) | Apaga el mock o cambia la fuente |
+
+Cambios de esta ronda en el backend: `src/main.py` (errores siempre en JSON con
+CORS, campo `warnings` y `timing_s` en `/risk`, endpoint `/diagnostico`) y
+`src/data_fetcher.py` (tres servidores Overpass en cadena con timeout 30 s, uso
+del fallback también cuando Overpass falla, registro `LAST_ERRORS` por fuente).
+
 ## Chequeo rápido de puertos
 
 ```powershell
 Invoke-RestMethod http://localhost:8000/health     # {"ok":true,"servicio":"riesgo"}
 Invoke-RestMethod http://localhost:8100/health     # {"ok":true,"servicio":"suscriptores"}
+Invoke-RestMethod http://localhost:8000/diagnostico | ConvertTo-Json -Depth 4   # qué dependencia falla
 Start-Process http://localhost:4321
 ```

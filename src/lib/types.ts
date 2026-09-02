@@ -34,6 +34,9 @@ export interface RiskComponents {
   twi_max: number;
   distance_to_channel_m: number;
   imperviousness_pct: number;
+  region?: 'sierra' | 'costa';
+  waterway_source?: 'osm' | 'fallback' | 'none';
+  rainfall_detail?: Record<string, unknown>;
 }
 
 export interface RiskResponse {
@@ -44,6 +47,24 @@ export interface RiskResponse {
   timestamp: string;
   components: RiskComponents;
   grid_geojson: RiskGrid;
+  /** Avisos no fatales del backend (GEE sin credenciales, Overpass caído + fallback, etc.) */
+  warnings?: string[];
+  /** Duración de cada etapa en segundos */
+  timing_s?: Record<string, number>;
+}
+
+/** GET /diagnostico del backend */
+export interface DiagnosticoCheck {
+  ok: boolean;
+  detalle: string;
+  segundos: number;
+}
+export interface Diagnostico {
+  ok: boolean;
+  resumen: string;
+  lluvia_real_disponible: boolean;
+  checks: Record<string, DiagnosticoCheck>;
+  ultimos_errores: Record<string, string>;
 }
 
 /** Parámetros aceptados por GET /risk */

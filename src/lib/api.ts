@@ -1,4 +1,4 @@
-import type { RiskQuery, RiskResponse, Sector } from './types';
+import type { Diagnostico, RiskQuery, RiskResponse, Sector } from './types';
 
 /** URLs configurables por .env (PUBLIC_* se exponen al navegador) */
 export const API_BASE = (import.meta.env.PUBLIC_API_BASE ?? 'http://localhost:8000').replace(/\/$/, '');
@@ -69,6 +69,13 @@ export async function backendAlive(timeoutMs = 4000): Promise<boolean> {
   } finally {
     clearTimeout(t);
   }
+}
+
+/** GET /diagnostico: prueba cada dependencia externa del backend (tarda hasta ~40 s) */
+export async function fetchDiagnostico(): Promise<Diagnostico> {
+  const res = await fetch(`${API_BASE}/diagnostico`);
+  if (!res.ok) throw new ApiError(`HTTP ${res.status}`, res.status);
+  return (await res.json()) as Diagnostico;
 }
 
 // ----------------------------------------------------------- suscriptores (Motor 2)

@@ -96,8 +96,9 @@ export default function Dashboard() {
         }
 
         const st = enAlerta.current;
+        const apiUmbral = res.alert_threshold ?? sector.umbral;
         if (res.risk_score < sector.umbral_salida) st[sector.sector] = false;
-        else if (res.risk_score >= sector.umbral && !st[sector.sector]) {
+        else if (res.risk_score >= apiUmbral && !st[sector.sector]) {
           st[sector.sector] = true;
           setEvents((ev) => [{ at: new Date(), sector: sector.sector, score: res.risk_score }, ...ev].slice(0, 8));
           notify('error', `⚠ ${sector.sector} cruzó el umbral`, 'Alerta SMS disparada.', { ttl: 10000 });
@@ -137,8 +138,9 @@ export default function Dashboard() {
   }, [realRain, source, eventStart, load]);
 
   const score = data?.risk_score ?? 0;
-  const level = riskLevel(score, sector.umbral);
-  const cruzado = score >= sector.umbral;
+  const currentUmbral = data?.alert_threshold ?? sector.umbral;
+  const level = riskLevel(score, currentUmbral);
+  const cruzado = score >= currentUmbral;
   
   const showPanel = !!data || !!clickedPoint;
   const isHistorical = !!(eventStart && eventEnd);
@@ -210,13 +212,13 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                <div className="score" style={{ color: riskColor(score, sector.umbral) }}>
+                <div className="score" style={{ color: riskColor(score, currentUmbral) }}>
                   {data ? score.toFixed(1) : '—'}
-                  <small>/ 100 · umbral {sector.umbral}</small>
+                  <small>/ 100 · umbral {currentUmbral}</small>
                 </div>
                 <div className="bar">
-                  <div className="bar-fill" style={{ width: `${Math.min(score, 100)}%`, background: riskColor(score, sector.umbral) }} />
-                  <div className="bar-threshold" style={{ left: `${sector.umbral}%` }} title={`Umbral ${sector.umbral}`} />
+                  <div className="bar-fill" style={{ width: `${Math.min(score, 100)}%`, background: riskColor(score, currentUmbral) }} />
+                  <div className="bar-threshold" style={{ left: `${currentUmbral}%` }} title={`Umbral ${currentUmbral}`} />
                 </div>
       
                 {data && (

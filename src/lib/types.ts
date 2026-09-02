@@ -96,6 +96,7 @@ export interface Sector {
   bbox_offset_deg?: number;
   fallback_waterway_coords?: number[][];
   descripcion?: string;
+  historical_events?: { name: string; start: string; end: string }[];
 }
 
 export type DataSource = 'backend' | 'mock';

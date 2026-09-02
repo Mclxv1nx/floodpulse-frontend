@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, GeoJSON, CircleMarker, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, CircleMarker, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import type { Layer, PathOptions } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { RiskFeature, RiskGrid, Sector } from '@/lib/types';
@@ -9,6 +9,8 @@ interface Props {
   sector: Sector;
   grid: RiskGrid | null;
   loading?: boolean;
+  onMapClick?: (lat: number, lon: number) => void;
+  clickedPoint?: { lat: number; lon: number } | null;
 }
 
 /** Recentra el mapa cuando cambia el sector seleccionado */
@@ -20,7 +22,17 @@ function Recenter({ lat, lon }: { lat: number; lon: number }) {
   return null;
 }
 
-export default function RiskMap({ sector, grid, loading }: Props) {
+/** Captura clics en el mapa */
+function MapClickHandler({ onClick }: { onClick?: (lat: number, lon: number) => void }) {
+  useMapEvents({
+    click(e: any) {
+      if (onClick) onClick(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
+
+export default function RiskMap({ sector, grid, loading, onMapClick, clickedPoint }: Props) {
   const umbral = sector.umbral;
 
   const style = useMemo(
@@ -68,18 +80,31 @@ export default function RiskMap({ sector, grid, loading }: Props) {
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Recenter lat={sector.lat} lon={sector.lon} />
+        <MapClickHandler onClick={onMapClick} />
         {grid && grid.features.length > 0 && (
           <GeoJSON key={gridKey} data={grid as never} style={style as never} onEachFeature={onEach as never} />
         )}
-        <CircleMarker
-          center={[sector.lat, sector.lon]}
-          radius={7}
-          pathOptions={{ color: '#0ea5e9', fillColor: '#38bdf8', fillOpacity: 1, weight: 2 }}
-        >
-          <Tooltip direction="top" offset={[0, -8]} permanent>
-            {sector.sector}
-          </Tooltip>
-        </CircleMarker>
+        {clickedPoint ? (
+          <CircleMarker
+            center={[clickedPoint.lat, clickedPoint.lon]}
+            radius={7}
+            pathOptions={{ color: '#0ea5e9', fillColor: '#38bdf8', fillOpacity: 1, weight: 2 }}
+          >
+            <Tooltip direction="top" offset={[0, -8]} permanent>
+              Punto seleccionado
+            </Tooltip>
+          </CircleMarker>
+        ) : (
+          <CircleMarker
+            center={[sector.lat, sector.lon]}
+            radius={7}
+            pathOptions={{ color: '#0ea5e9', fillColor: '#38bdf8', fillOpacity: 1, weight: 2 }}
+          >
+            <Tooltip direction="top" offset={[0, -8]} permanent>
+              {sector.sector}
+            </Tooltip>
+          </CircleMarker>
+        )}
       </MapContainer>
 
       {loading && (

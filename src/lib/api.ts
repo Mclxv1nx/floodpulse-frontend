@@ -41,13 +41,15 @@ export async function fetchRisk(q: RiskQuery, signal?: AbortSignal): Promise<Ris
   return (await res.json()) as RiskResponse;
 }
 
-/** Helper: arma la consulta a partir de un sector + lluvia simulada (o null = lluvia real) */
-export function riskQueryFor(sector: Sector, rainfallMm: number | null): RiskQuery {
+/** Helper: arma la consulta a partir de un sector + lluvia simulada (o null = lluvia real) + fechas históricas */
+export function riskQueryFor(sector: Sector, rainfallMm: number | null, eventStart?: string, eventEnd?: string): RiskQuery {
   return {
     lat: sector.lat,
     lon: sector.lon,
     bbox_offset_deg: sector.bbox_offset_deg,
     rainfall_mm: rainfallMm,
+    event_start: eventStart,
+    event_end: eventEnd,
     fallback_waterway_coords: sector.fallback_waterway_coords,
   };
 }

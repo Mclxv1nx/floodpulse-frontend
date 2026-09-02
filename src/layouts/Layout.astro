@@ -1,0 +1,18 @@
+---
+import '@/styles/global.css';
+interface Props { title?: string }
+const { title = 'FloodPulse — Riesgo de inundación hiperlocal' } = Astro.props;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content="Dashboard FloodPulse: índice de riesgo de inundación por celdas de 100 m y alertas SMS. HackTech El Niño 2026." />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

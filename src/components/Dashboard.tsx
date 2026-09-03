@@ -23,8 +23,8 @@ export default function Dashboard() {
   const [sector, setSector] = useState<Sector>(SECTOR_DEFAULT);
   const [clickedPoint, setClickedPoint] = useState<{lat: number, lon: number} | null>(null);
   
-  const [rain, setRain] = useState<number>(10);
-  const [rainDraft, setRainDraft] = useState<number>(10);
+  const [rain, setRain] = useState<number>(60);
+  const [rainDraft, setRainDraft] = useState<number>(60);
   const rainTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const [realRain, setRealRain] = useState(false);
@@ -97,7 +97,8 @@ export default function Dashboard() {
 
         const st = enAlerta.current;
         const apiUmbral = res.alert_threshold ?? sector.umbral;
-        if (res.risk_score < sector.umbral_salida) st[sector.sector] = false;
+        const apiUmbralSalida = Math.max(0, apiUmbral - 6.16);
+        if (res.risk_score < apiUmbralSalida) st[sector.sector] = false;
         else if (res.risk_score >= apiUmbral && !st[sector.sector]) {
           st[sector.sector] = true;
           setEvents((ev) => [{ at: new Date(), sector: sector.sector, score: res.risk_score }, ...ev].slice(0, 8));
@@ -200,8 +201,8 @@ export default function Dashboard() {
                       sector: `Coord: ${clickedPoint.lat.toFixed(4)}, ${clickedPoint.lon.toFixed(4)}`,
                       lat: clickedPoint.lat,
                       lon: clickedPoint.lon,
-                      umbral: 70,
-                      umbral_salida: 60,
+                      umbral: 31.16,
+                      umbral_salida: 25,
                     });
                     setClickedPoint(null);
                   }}

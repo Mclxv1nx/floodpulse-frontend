@@ -115,9 +115,9 @@ export default function RiskMap({ sector, grid, loading, onMapClick, clickedPoin
       )}
 
       <div className="legend">
-        <span><i style={{ background: '#22c55e' }} /> &lt; 30 bajo</span>
-        <span><i style={{ background: '#f59e0b' }} /> 30 – {umbral} medio</span>
-        <span><i style={{ background: '#ef4444' }} /> ≥ {umbral} alerta SMS</span>
+        <span><i style={{ background: '#22c55e' }} /> &lt; {(umbral * 0.7).toFixed(1)} bajo</span>
+        <span><i style={{ background: '#f59e0b' }} /> {(umbral * 0.7).toFixed(1)} – {umbral.toFixed(2)} medio</span>
+        <span><i style={{ background: '#ef4444' }} /> ≥ {umbral.toFixed(2)} alerta SMS</span>
       </div>
     </div>
   );

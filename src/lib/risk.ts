@@ -6,14 +6,14 @@
 
 export type RiskLevel = 'bajo' | 'medio' | 'alto';
 
-export function riskLevel(score: number, umbral = 70): RiskLevel {
+export function riskLevel(score: number, umbral = 31.16): RiskLevel {
   if (score >= umbral) return 'alto';
-  if (score >= 30) return 'medio';
+  if (score >= umbral * 0.7) return 'medio';
   return 'bajo';
 }
 
-/** Color de relleno para una celda del mapa (guía: <30 verde, 30-70 amarillo, >umbral rojo) */
-export function riskColor(score: number, umbral = 70): string {
+/** Color de relleno para una celda del mapa */
+export function riskColor(score: number, umbral = 31.16): string {
   const level = riskLevel(score, umbral);
   if (level === 'alto') return '#ef4444';
   if (level === 'medio') return '#f59e0b';
@@ -21,7 +21,7 @@ export function riskColor(score: number, umbral = 70): string {
 }
 
 /** Opacidad: cuanto más riesgo, más sólida la celda */
-export function riskOpacity(score: number, umbral = 70): number {
+export function riskOpacity(score: number, umbral = 31.16): number {
   const level = riskLevel(score, umbral);
   if (level === 'alto') return 0.75;
   if (level === 'medio') return 0.55;

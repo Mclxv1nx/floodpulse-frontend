@@ -47,6 +47,7 @@ export interface RiskResponse {
   timestamp: string;
   components: RiskComponents;
   grid_geojson: RiskGrid;
+  alert_threshold?: number;
   /** Avisos no fatales del backend (GEE sin credenciales, Overpass caído + fallback, etc.) */
   warnings?: string[];
   /** Duración de cada etapa en segundos */

@@ -23,11 +23,12 @@ export default function Dashboard() {
   const [sector, setSector] = useState<Sector>(SECTOR_DEFAULT);
   const [clickedPoint, setClickedPoint] = useState<{lat: number, lon: number} | null>(null);
   
-  const [rain, setRain] = useState<number>(10);
-  const [rainDraft, setRainDraft] = useState<number>(10);
+  const [rain, setRain] = useState<number>(60);
+  const [rainDraft, setRainDraft] = useState<number>(60);
   const rainTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [minimized, setMinimized] = useState(false);
   
-  const [realRain, setRealRain] = useState(false);
+  const [realRain, setRealRain] = useState(true);
   const [eventStart, setEventStart] = useState<string>('');
   const [eventEnd, setEventEnd] = useState<string>('');
   
@@ -96,8 +97,10 @@ export default function Dashboard() {
         }
 
         const st = enAlerta.current;
-        if (res.risk_score < sector.umbral_salida) st[sector.sector] = false;
-        else if (res.risk_score >= sector.umbral && !st[sector.sector]) {
+        const apiUmbral = res.alert_threshold ?? sector.umbral;
+        const apiUmbralSalida = Math.max(0, apiUmbral - 6.16);
+        if (res.risk_score < apiUmbralSalida) st[sector.sector] = false;
+        else if (res.risk_score >= apiUmbral && !st[sector.sector]) {
           st[sector.sector] = true;
           setEvents((ev) => [{ at: new Date(), sector: sector.sector, score: res.risk_score }, ...ev].slice(0, 8));
           notify('error', `⚠ ${sector.sector} cruzó el umbral`, 'Alerta SMS disparada.', { ttl: 10000 });
@@ -137,8 +140,9 @@ export default function Dashboard() {
   }, [realRain, source, eventStart, load]);
 
   const score = data?.risk_score ?? 0;
-  const level = riskLevel(score, sector.umbral);
-  const cruzado = score >= sector.umbral;
+  const currentUmbral = data?.alert_threshold ?? sector.umbral;
+  const level = riskLevel(score, currentUmbral);
+  const cruzado = score >= currentUmbral;
   
   const showPanel = !!data || !!clickedPoint;
   const isHistorical = !!(eventStart && eventEnd);
@@ -176,18 +180,31 @@ export default function Dashboard() {
           <div className={`floating-panel floating-bottom-left card risk risk-${level}`}>
             <header className="card-head">
               <h3>{clickedPoint ? `Ubicación: ${clickedPoint.lat.toFixed(4)}, ${clickedPoint.lon.toFixed(4)}` : sector.sector}</h3>
-              <button 
-                className="ghost" 
-                style={{ padding: '4px 8px', borderRadius: '50%' }}
-                onClick={() => {
-                   setClickedPoint(null); 
-                   setData(null);
-                   setSector(SECTOR_DEFAULT);
-                   setEventStart('');
-                   setEventEnd('');
-                }}
-              >✕</button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  className="ghost" 
+                  style={{ padding: '4px 8px', borderRadius: '50%' }}
+                  onClick={() => setMinimized(!minimized)}
+                  title={minimized ? "Expandir" : "Minimizar"}
+                >{minimized ? "▲" : "▼"}</button>
+                <button 
+                  className="ghost" 
+                  style={{ padding: '4px 8px', borderRadius: '50%' }}
+                  onClick={() => {
+                     setClickedPoint(null); 
+                     setData(null);
+                     setSector(SECTOR_DEFAULT);
+                     setEventStart('');
+                     setEventEnd('');
+                     setMinimized(false);
+                  }}
+                  title="Cerrar"
+                >✕</button>
+              </div>
             </header>
+
+            {!minimized && (
+              <>
 
             {clickedPoint ? (
               <div className="field">
@@ -198,8 +215,8 @@ export default function Dashboard() {
                       sector: `Coord: ${clickedPoint.lat.toFixed(4)}, ${clickedPoint.lon.toFixed(4)}`,
                       lat: clickedPoint.lat,
                       lon: clickedPoint.lon,
-                      umbral: 70,
-                      umbral_salida: 60,
+                      umbral: 31.16,
+                      umbral_salida: 25,
                     });
                     setClickedPoint(null);
                   }}
@@ -210,13 +227,13 @@ export default function Dashboard() {
               </div>
             ) : (
               <>
-                <div className="score" style={{ color: riskColor(score, sector.umbral) }}>
+                <div className="score" style={{ color: riskColor(score, currentUmbral) }}>
                   {data ? score.toFixed(1) : '—'}
-                  <small>/ 100 · umbral {sector.umbral}</small>
+                  <small>/ 100 · umbral {currentUmbral}</small>
                 </div>
                 <div className="bar">
-                  <div className="bar-fill" style={{ width: `${Math.min(score, 100)}%`, background: riskColor(score, sector.umbral) }} />
-                  <div className="bar-threshold" style={{ left: `${sector.umbral}%` }} title={`Umbral ${sector.umbral}`} />
+                  <div className="bar-fill" style={{ width: `${Math.min(score, 100)}%`, background: riskColor(score, currentUmbral) }} />
+                  <div className="bar-threshold" style={{ left: `${currentUmbral}%` }} title={`Umbral ${currentUmbral}`} />
                 </div>
       
                 {data && (
@@ -292,6 +309,8 @@ export default function Dashboard() {
                 {loading && <p className="hint">Calculando… {elapsed}s</p>}
                 {error && <p className="hint warn">Error: {error}</p>}
               </footer>
+            )}
+              </>
             )}
           </div>
         )}

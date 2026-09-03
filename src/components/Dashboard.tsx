@@ -26,8 +26,9 @@ export default function Dashboard() {
   const [rain, setRain] = useState<number>(60);
   const [rainDraft, setRainDraft] = useState<number>(60);
   const rainTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [minimized, setMinimized] = useState(false);
   
-  const [realRain, setRealRain] = useState(false);
+  const [realRain, setRealRain] = useState(true);
   const [eventStart, setEventStart] = useState<string>('');
   const [eventEnd, setEventEnd] = useState<string>('');
   
@@ -179,18 +180,31 @@ export default function Dashboard() {
           <div className={`floating-panel floating-bottom-left card risk risk-${level}`}>
             <header className="card-head">
               <h3>{clickedPoint ? `Ubicación: ${clickedPoint.lat.toFixed(4)}, ${clickedPoint.lon.toFixed(4)}` : sector.sector}</h3>
-              <button 
-                className="ghost" 
-                style={{ padding: '4px 8px', borderRadius: '50%' }}
-                onClick={() => {
-                   setClickedPoint(null); 
-                   setData(null);
-                   setSector(SECTOR_DEFAULT);
-                   setEventStart('');
-                   setEventEnd('');
-                }}
-              >✕</button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  className="ghost" 
+                  style={{ padding: '4px 8px', borderRadius: '50%' }}
+                  onClick={() => setMinimized(!minimized)}
+                  title={minimized ? "Expandir" : "Minimizar"}
+                >{minimized ? "▲" : "▼"}</button>
+                <button 
+                  className="ghost" 
+                  style={{ padding: '4px 8px', borderRadius: '50%' }}
+                  onClick={() => {
+                     setClickedPoint(null); 
+                     setData(null);
+                     setSector(SECTOR_DEFAULT);
+                     setEventStart('');
+                     setEventEnd('');
+                     setMinimized(false);
+                  }}
+                  title="Cerrar"
+                >✕</button>
+              </div>
             </header>
+
+            {!minimized && (
+              <>
 
             {clickedPoint ? (
               <div className="field">
@@ -295,6 +309,8 @@ export default function Dashboard() {
                 {loading && <p className="hint">Calculando… {elapsed}s</p>}
                 {error && <p className="hint warn">Error: {error}</p>}
               </footer>
+            )}
+              </>
             )}
           </div>
         )}

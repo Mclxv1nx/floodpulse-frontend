@@ -67,7 +67,7 @@ export const SECTORES: Sector[] = [
   },
 ];
 
-export const SECTOR_DEFAULT = SECTORES[0];
+export const SECTOR_DEFAULT = SECTORES[2]; // Guayaquil
 
 /** La fórmula del backend satura la lluvia en 150 mm (config.py -> max_rainfall_mm) */
 export const MAX_RAINFALL_MM = 150;

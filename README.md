@@ -39,14 +39,14 @@ src/
     types.ts           contrato de datos con /risk (RiskResponse, Sector...)
     api.ts             fetch al backend y a la API de suscriptores
     mock.ts            generador de GeoJSON simulado (misma fórmula del backend)
-    risk.ts            umbrales y colores (<30 verde, 30-umbral amarillo, ≥umbral rojo)
+    risk.ts            umbrales y colores dinámicos (<70% umbral verde, 70%-100% amarillo, ≥umbral rojo)
     sectores.ts        sectores de la demo (espejo de suscriptores.json)
   pages/index.astro    página única; el Dashboard se hidrata con client:only
 ```
 
 ## Lógica de colores (igual que el monitor SMS)
 
-Un sector "cruza" cuando `risk_score ≥ umbral` del sector (70 por defecto). En ese
+Un sector "cruza" cuando `risk_score ≥ umbral` del sector (ej. 31.16). En ese
 instante la celda se pinta roja, aparece el banner de alerta y `alerta_sms.py`
 —que consulta el mismo `/risk`— encola el SMS. Se aplica la misma histéresis:
 no se repite la alerta hasta que el score baje de `umbral_salida`.

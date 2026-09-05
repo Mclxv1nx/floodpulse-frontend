@@ -132,3 +132,19 @@ export async function subscribe(telefono: string, sector: string): Promise<{ tel
   }
   return body;
 }
+
+export async function testAlert(sector: string, riesgo: number): Promise<{ ok: boolean; enviados: number }> {
+  const res = await fetch(`${SUBS_API_BASE}/test_alert`, {
+    method: 'POST',
+    headers: subsHeaders(),
+    body: JSON.stringify({ sector, riesgo }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = Array.isArray(body?.detail)
+      ? body.detail.map((d: { msg?: string }) => d.msg).join(', ')
+      : body?.detail ?? `HTTP ${res.status}`;
+    throw new ApiError(String(detail), res.status);
+  }
+  return body;
+}

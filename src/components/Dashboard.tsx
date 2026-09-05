@@ -4,7 +4,7 @@ import SubscribeForm from './SubscribeForm';
 import Toasts from './Toasts';
 import DebugPanel from './DebugPanel';
 import SearchBar from './SearchBar';
-import { API_BASE, backendAlive, fetchRisk, riskQueryFor } from '@/lib/api';
+import { API_BASE, backendAlive, fetchRisk, riskQueryFor, testAlert } from '@/lib/api';
 import { buildMockRisk } from '@/lib/mock';
 import { explainFetchError, notify } from '@/lib/notify';
 import { LEVEL_LABEL, riskColor, riskLevel } from '@/lib/risk';
@@ -248,7 +248,20 @@ export default function Dashboard() {
                 {cruzado && (
                   <div className="alert-banner">
                     <strong>⚠ Umbral superado</strong>
-                    El monitor SMS dispara la alerta en su próximo ciclo.
+                    <p>El monitor SMS dispara la alerta en su próximo ciclo.</p>
+                    <button 
+                       onClick={async () => {
+                           try {
+                               const res = await testAlert(sector.sector, score);
+                               notify('ok', 'Alerta Simulada', `Se enviaron ${res.enviados} SMS a los suscritos en ${sector.sector}.`);
+                           } catch (err: any) {
+                               notify('warn', 'Error simulando alerta', err.message);
+                           }
+                       }}
+                       style={{ marginTop: '8px', background: 'white', color: '#ef4444', fontWeight: 'bold', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                       Simular Envío de SMS Ahora
+                    </button>
                   </div>
                 )}
 
